@@ -1,0 +1,7 @@
+{
+        "DB": {
+                "URL": "localhost",
+                "Name": "rns"
+        } ,
+        "Addr": ":8080"
+}
