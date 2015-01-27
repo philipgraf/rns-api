@@ -12,7 +12,8 @@ import (
 func Router() *mux.Router {
 	r := mux.NewRouter()
 	notiRouter := r.PathPrefix("/notis").Subrouter()
-	notiRouter.HandleFunc("/", use(indexNotiHandler, connectDB))
+	notiRouter.HandleFunc("/", use(indexNotiHandler, connectDB)).Methods("GET")
+	notiRouter.HandleFunc("/", use(createNotiHandler, connectDB)).Methods("POST")
 	return r
 }
 

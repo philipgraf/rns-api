@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,7 +20,7 @@ func indexNotiHandler(w http.ResponseWriter, r *http.Request) {
 
 	queryParams := r.URL.Query()
 
-	page, err := strconv.Atoi(queryParams["page"][0])
+	page, err := strconv.Atoi(queryParams.Get("page"))
 
 	if err != nil {
 		page = 0
@@ -33,8 +33,6 @@ func indexNotiHandler(w http.ResponseWriter, r *http.Request) {
 	if err := db.C("notifications").Find(nil).Skip(offset).Limit(PAGE_LIMIT).All(&result); err != nil {
 		log.Fatalf("unable to get jan: %v", err)
 	}
-
-	fmt.Println(r.URL.Scheme)
 
 	if len(result) == PAGE_LIMIT {
 		nextPage := strconv.Itoa(page + 1)
@@ -49,4 +47,23 @@ func indexNotiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, result)
+}
+
+func createNotiHandler(w http.ResponseWriter, r *http.Request) {
+
+	noti := &models.Noti{}
+	db := database.GetFromContext(r)
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(noti)
+	if err != nil {
+		Error(w, err, http.StatusBadRequest)
+	}
+
+	if err := db.C("notifications").Insert(noti); err != nil {
+		log.Fatalf("unable to insert into user: %v", err)
+		Error(w, err, http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
